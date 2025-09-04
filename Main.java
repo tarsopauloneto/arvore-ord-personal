@@ -15,40 +15,52 @@ public class Main {
 
         System.out.println("\nGerando valores aleatórios para preencher a árvore:");
         for (int i = 0; i < quantidadeNos; i++) {
-            valores[i] = random.nextInt(10); // valores entre 0 e 9
+            valores[i] = random.nextInt(100); // valores entre 0 e 99
             System.out.print(valores[i] + " ");
         }
         System.out.println("\n");
 
-        System.out.println("Escolha o método de inserção:");
-        System.out.println("1 - Pré-ordem");
-        System.out.println("2 - Pós-ordem");
-        System.out.println("3 - Por nível");
-        System.out.print("Opção: ");
-        int opcao = scanner.nextInt();
+        // Insertion Sort
+        int[] numeros1 = valores.clone();
+        Ordenacao.insertionSort(numeros1);
 
-        switch (opcao) {
-            case 1:
-                arvore.inserirPreOrdem(valores);
-                System.out.println("\nTravessia em pré-ordem:");
-                arvore.preOrdem(arvore.raiz);
-                break;
+        // Selection Sort
+        int[] numeros2 = valores.clone();
+        Ordenacao.selectionSort(numeros2);
 
-            case 2:
-                arvore.inserirPosOrdem(valores);
-                System.out.println("\nTravessia em pós-ordem:");
-                arvore.posOrdem(arvore.raiz);
-                break;
+        // Bubble Sort
+        int[] numeros3 = valores.clone();
+        Ordenacao.bubbleSort(numeros3);
 
-            case 3:
-                arvore.inserirPorNivel(valores);
-                System.out.println("\nTravessia por nível:");
-                arvore.porNivel();
-                break;
+        // System.out.println("Escolha o método de inserção:");
+        // System.out.println("1 - Pré-ordem");
+        // System.out.println("2 - Pós-ordem");
+        // System.out.println("3 - Por nível");
+        // System.out.print("Opção: ");
+        // int opcao = scanner.nextInt();
 
-            default:
-                System.out.println("Opção inválida!");
-        }
+        // switch (opcao) {
+        // case 1:
+        // arvore.inserirPreOrdem(valores);
+        // System.out.println("\nTravessia em pré-ordem:");
+        // arvore.preOrdem(arvore.raiz);
+        // break;
+
+        // case 2:
+        // arvore.inserirPosOrdem(valores);
+        // System.out.println("\nTravessia em pós-ordem:");
+        // arvore.posOrdem(arvore.raiz);
+        // break;
+
+        // case 3:
+        // arvore.inserirPorNivel(valores);
+        // System.out.println("\nTravessia por nível:");
+        // arvore.porNivel();
+        // break;
+
+        // default:
+        // System.out.println("Opção inválida!");
+        // }
 
         scanner.close();
     }
