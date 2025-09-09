@@ -1,16 +1,6 @@
 public class Ordenacao {
-
-    // Método auxiliar para imprimir o array
-    private static void printArray(int[] valores) {
-        for (int valor : valores) {
-            System.out.print(valor + " ");
-        }
-        System.out.println();
-    }
-
-    // Insertion Sort
-    public static void insertionSort(int[] valores) {
-        System.out.println("Insertion Sort:");
+    public static long insertionSort(int[] valores) {
+        long start = System.nanoTime();
         for (int i = 1; i < valores.length; i++) {
             int aux = valores[i];
             int j = i - 1;
@@ -19,48 +9,41 @@ public class Ordenacao {
                 j--;
             }
             valores[j + 1] = aux;
-            System.out.print("Passada " + i + ": ");
-            printArray(valores);
         }
-        System.out.println();
+        return System.nanoTime() - start;
     }
 
-    // Selection Sort
-    public static void selectionSort(int[] valores) {
-        System.out.println("Selection Sort:");
+    public static long selectionSort(int[] valores) {
+        long start = System.nanoTime();
         for (int i = 0; i < valores.length - 1; i++) {
-            int indiceMenor = i;
+            int menor = i;
             for (int j = i + 1; j < valores.length; j++) {
-                if (valores[j] < valores[indiceMenor]) {
-                    indiceMenor = j;
-                }
+                if (valores[j] < valores[menor])
+                    menor = j;
             }
-            if (indiceMenor != i) {
-                int aux = valores[i];
-                valores[i] = valores[indiceMenor];
-                valores[indiceMenor] = aux;
-            }
-            System.out.print("Passada " + (i + 1) + ": ");
-            printArray(valores);
+            int aux = valores[menor];
+            valores[menor] = valores[i];
+            valores[i] = aux;
         }
-        System.out.println();
+        return System.nanoTime() - start;
     }
 
-    // Bubble Sort
-    public static void bubbleSort(int[] valores) {
-        System.out.println("Bubble Sort:");
-        int n = valores.length;
-        for (int i = 0; i < n - 1; i++) {
-            for (int j = 0; j < n - 1 - i; j++) {
+    public static long bubbleSort(int[] valores) {
+        long start = System.nanoTime();
+        boolean trocou;
+        for (int i = 0; i < valores.length - 1; i++) {
+            trocou = false;
+            for (int j = 0; j < valores.length - 1 - i; j++) {
                 if (valores[j] > valores[j + 1]) {
                     int aux = valores[j];
                     valores[j] = valores[j + 1];
                     valores[j + 1] = aux;
+                    trocou = true;
                 }
             }
-            System.out.print("Passada " + (i + 1) + ": ");
-            printArray(valores);
+            if (!trocou)
+                break;
         }
-        System.out.println();
+        return System.nanoTime() - start;
     }
 }

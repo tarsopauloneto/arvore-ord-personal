@@ -1,127 +1,199 @@
-import java.util.Queue;
-import java.util.LinkedList;
-
 public class ArvoreBinaria {
     No raiz;
-    int altura;
 
-    public ArvoreBinaria(int altura) {
-        this.altura = altura;
+    public ArvoreBinaria() {
         this.raiz = null;
     }
 
-    // Calcula a quantidade máxima de nós para uma árvore cheia/perfeita
-    public int calcularNumeroMaximoDeNos() {
-        return (int) Math.pow(2, altura) - 1;
-    }
-
-    // -------- MÉTODOS DE INSERÇÃO --------
-
-    // Inserção por pré-ordem (raiz -> esquerda -> direita)
-    public void inserirPreOrdem(int[] valores) {
-        System.out.println("Inserindo em pré-ordem:");
-        raiz = inserirPreOrdemRec(valores, 0);
-    }
-
-    private No inserirPreOrdemRec(int[] valores, int indice) {
-        if (indice >= valores.length)
-            return null;
-
-        No atual = new No(valores[indice]);
-        System.out.println("Inserido: " + atual.valor);
-
-        // Filho esquerdo
-        atual.esquerdo = inserirPreOrdemRec(valores, 2 * indice + 1);
-        // Filho direito
-        atual.direito = inserirPreOrdemRec(valores, 2 * indice + 2);
-
-        return atual;
-    }
-
-    // Inserção por pós-ordem (esquerda -> direita -> raiz)
-    public void inserirPosOrdem(int[] valores) {
-        System.out.println("Inserindo em pós-ordem:");
-        raiz = inserirPosOrdemRec(valores, 0);
-    }
-
-    private No inserirPosOrdemRec(int[] valores, int indice) {
-        if (indice >= valores.length)
-            return null;
-
-        // Cria filhos primeiro
-        No esquerdo = inserirPosOrdemRec(valores, 2 * indice + 1);
-        No direito = inserirPosOrdemRec(valores, 2 * indice + 2);
-
-        // Depois cria o nó atual
-        No atual = new No(valores[indice]);
-        atual.esquerdo = esquerdo;
-        atual.direito = direito;
-        System.out.println("Inserido: " + atual.valor);
-
-        return atual;
-    }
-
-    // Inserção por nível
-    public void inserirPorNivel(int[] valores) {
-        System.out.println("Inserindo por nível:");
-        if (valores.length == 0)
+    public void inserirPreOrder(int valor, boolean balanceado) {
+        if (raiz == null) {
+            raiz = new No(valor);
             return;
-
-        raiz = new No(valores[0]);
-        System.out.println("Inserido: " + raiz.valor);
-
-        // Simula a fila usando LinkedList
-        Queue<No> fila = new LinkedList<>();
-        fila.add(raiz);
-
-        int i = 1; // próximo valor a inserir
-
-        while (i < valores.length) {
-            No atual = fila.poll();
-
-            // Sempre cria filho esquerdo
-            atual.esquerdo = new No(valores[i++]);
-            System.out.println("Inserido: " + atual.esquerdo.valor);
-            fila.add(atual.esquerdo);
-
-            // Sempre cria filho direito
-            atual.direito = new No(valores[i++]);
-            System.out.println("Inserido: " + atual.direito.valor);
-            fila.add(atual.direito);
+        }
+        No[] pilha = new No[1024 * 16];
+        int topo = 0;
+        pilha[topo++] = raiz;
+        while (topo > 0) {
+            No atual = pilha[--topo];
+            if (atual.esq == null) {
+                atual.esq = new No(valor);
+                return;
+            } else if (atual.dir == null) {
+                atual.dir = new No(valor);
+                return;
+            } else {
+                if (balanceado) {
+                    pilha[topo++] = atual.dir;
+                    pilha[topo++] = atual.esq;
+                } else {
+                    pilha[topo++] = atual.dir;
+                    pilha[topo++] = atual.esq;
+                }
+            }
         }
     }
 
-    // -------- MÉTODOS DE TRAVESSIA --------
-
-    public void preOrdem(No no) {
-        if (no == null)
+    public void inserirInOrder(int valor, boolean balanceado) {
+        if (raiz == null) {
+            raiz = new No(valor);
             return;
-        System.out.print(no.valor + " ");
-        preOrdem(no.esquerdo);
-        preOrdem(no.direito);
+        }
+        No[] pilha = new No[1024 * 16];
+        No atual = raiz;
+        int topo = 0;
+        while (atual != null || topo > 0) {
+            while (atual != null) {
+                pilha[topo++] = atual;
+                atual = atual.esq;
+            }
+            atual = pilha[--topo];
+            if (atual.esq == null) {
+                atual.esq = new No(valor);
+                return;
+            } else if (atual.dir == null) {
+                atual.dir = new No(valor);
+                return;
+            }
+            atual = atual.dir;
+        }
+        No node = raiz;
+        while (node.dir != null)
+            node = node.dir;
+        node.dir = new No(valor);
     }
 
-    public void posOrdem(No no) {
-        if (no == null)
+    public void inserirPostOrder(int valor, boolean balanceado) {
+        if (raiz == null) {
+            raiz = new No(valor);
             return;
-        posOrdem(no.esquerdo);
-        posOrdem(no.direito);
-        System.out.print(no.valor + " ");
+        }
+        No[] pilha = new No[1024 * 16];
+        int topo = 0;
+        pilha[topo++] = raiz;
+        while (topo > 0) {
+            No atual = pilha[--topo];
+            if (atual.esq == null) {
+                atual.esq = new No(valor);
+                return;
+            } else if (atual.dir == null) {
+                atual.dir = new No(valor);
+                return;
+            } else {
+                if (balanceado) {
+                    pilha[topo++] = atual.esq;
+                    pilha[topo++] = atual.dir;
+                } else {
+                    pilha[topo++] = atual.esq;
+                    pilha[topo++] = atual.dir;
+                }
+            }
+        }
     }
 
-    public void porNivel() {
+    public void inserirEmNivel(int valor, boolean balanceado) {
+        if (raiz == null) {
+            raiz = new No(valor);
+            return;
+        }
+        No[] fila = new No[1024 * 16];
+        int inicio = 0, fim = 0;
+        fila[fim++] = raiz;
+        while (inicio < fim) {
+            No atual = fila[inicio++];
+            if (atual.esq == null) {
+                atual.esq = new No(valor);
+                return;
+            } else if (atual.dir == null) {
+                atual.dir = new No(valor);
+                return;
+            } else {
+                fila[fim++] = atual.esq;
+                fila[fim++] = atual.dir;
+            }
+        }
+    }
+
+    public int[] preOrdem() {
+        int tamanho = contarNos(raiz);
+        int[] out = new int[tamanho];
+        preOrdemRec(raiz, out, 0);
+        return out;
+    }
+
+    private int preOrdemRec(No node, int[] out, int idx) {
+        if (node == null)
+            return idx;
+        out[idx++] = node.valor;
+        idx = preOrdemRec(node.esq, out, idx);
+        idx = preOrdemRec(node.dir, out, idx);
+        return idx;
+    }
+
+    public int[] inOrdem() {
+        int tamanho = contarNos(raiz);
+        int[] out = new int[tamanho];
+        inOrdemRec(raiz, out, 0);
+        return out;
+    }
+
+    private int inOrdemRec(No node, int[] out, int idx) {
+        if (node == null)
+            return idx;
+        idx = inOrdemRec(node.esq, out, idx);
+        out[idx++] = node.valor;
+        idx = inOrdemRec(node.dir, out, idx);
+        return idx;
+    }
+
+    public int[] posOrdem() {
+        int tamanho = contarNos(raiz);
+        int[] out = new int[tamanho];
+        posOrdemRec(raiz, out, 0);
+        return out;
+    }
+
+    private int posOrdemRec(No node, int[] out, int idx) {
+        if (node == null)
+            return idx;
+        idx = posOrdemRec(node.esq, out, idx);
+        idx = posOrdemRec(node.dir, out, idx);
+        out[idx++] = node.valor;
+        return idx;
+    }
+
+    public int[] emNivel() {
+        int tamanho = contarNos(raiz);
+        int[] out = new int[tamanho];
         if (raiz == null)
-            return;
-
-        Queue<No> fila = new LinkedList<>();
-        fila.add(raiz);
-        while (!fila.isEmpty()) {
-            No atual = fila.poll();
-            System.out.print(atual.valor + " ");
-            if (atual.esquerdo != null)
-                fila.add(atual.esquerdo);
-            if (atual.direito != null)
-                fila.add(atual.direito);
+            return out;
+        No[] fila = new No[tamanho + 5];
+        int inicio = 0, fim = 0, idx = 0;
+        fila[fim++] = raiz;
+        while (inicio < fim) {
+            No atual = fila[inicio++];
+            out[idx++] = atual.valor;
+            if (atual.esq != null)
+                fila[fim++] = atual.esq;
+            if (atual.dir != null)
+                fila[fim++] = atual.dir;
         }
+        return out;
+    }
+
+    public int contarNos(No node) {
+        if (node == null)
+            return 0;
+        return 1 + contarNos(node.esq) + contarNos(node.dir);
+    }
+
+    public static String arrToStr(int[] a) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < a.length; i++) {
+            sb.append(a[i]);
+            if (i < a.length - 1)
+                sb.append(", ");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }
