@@ -1,164 +1,164 @@
 import java.util.Scanner;
-import java.util.Random;
 
 public class Main {
-
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        boolean repetir = true;
+        try (Scanner sc = new Scanner(System.in)) {
+            while (true) {
+                System.out.print("Digite a altura da árvore (0 para sair): ");
+                int altura = sc.nextInt();
+                if (altura == 0)
+                    break;
 
-        while (repetir) {
-            System.out.print("Digite a altura da árvore: ");
-            int altura = sc.nextInt();
-            int numeroNos = 1;
-            for (int i = 0; i < altura; i++)
-                numeroNos *= 2;
-            numeroNos -= 1; // número de nós para árvore cheia
-            System.out.println("Número de nós = 2^" + altura + "-1 = " + numeroNos);
+                // calcular número de nós
+                int numNos = (int) Math.pow(2, altura) - 1;
+                System.out.println("Número de nós criados: " + numNos);
 
-            int[] valores = new int[numeroNos];
-            Random rand = new Random();
-            for (int i = 0; i < numeroNos; i++) {
-                valores[i] = rand.nextInt(100);
-            }
+                // gerar vetor de valores aleatórios
+                int[] valores = new int[numNos];
+                for (int i = 0; i < numNos; i++) {
+                    valores[i] = (int) (Math.random() * 100);
+                }
+                System.out.println("Vetor original: " + ArvoreBinaria.arrToStr(valores));
 
-            // Exibe vetor gerado
-            System.out.print("Vetor gerado: [");
-            for (int i = 0; i < valores.length; i++) {
-                System.out.print(valores[i]);
-                if (i < valores.length - 1)
-                    System.out.print(", ");
-            }
-            System.out.println("]");
+                // construir árvores (8 cenários: percurso × completa/desbalanceada)
+                ArvoreBinaria[] arvores = new ArvoreBinaria[8];
+                String[] percursos = { "Pré-ordem", "In-ordem", "Pós-ordem", "Em nível" };
+                String[] formas = { "Completa", "Desbalanceada" };
+                int idx = 0;
 
-            String[] percursos = { "Pré-ordem", "Pós-ordem", "Em ordem", "Em nível" };
-            String[] formas = { "Completa", "Desbalanceada" };
-            String[] algoritmos = { "InsertionSort", "SelectionSort", "BubbleSort" };
-
-            // Tabela fixa: 4 percursos × 2 formas × 3 algoritmos = 24 linhas × 6 colunas
-            String[][] tabelaResultados = new String[24][6];
-            int linhaTabela = 0;
-
-            for (int p = 0; p < percursos.length; p++) {
-                String percurso = percursos[p];
-
-                for (int f = 0; f < formas.length; f++) {
-                    String forma = formas[f];
-
-                    // Cria árvore
-                    ArvoreBinaria arvore = new ArvoreBinaria();
-
-                    // Inserção de acordo com percurso e forma
-                    for (int i = 0; i < valores.length; i++) {
-                        int v = valores[i];
-                        boolean balanceado = forma.equals("Completa");
-                        switch (percurso) {
-                            case "Pré-ordem":
-                                arvore.inserirPreOrder(v, balanceado);
-                                break;
-                            case "Pós-ordem":
-                                arvore.inserirPostOrder(v, balanceado);
-                                break;
-                            case "Em ordem":
-                                arvore.inserirInOrder(v, balanceado);
-                                break;
-                            case "Em nível":
-                                arvore.inserirEmNivel(v, balanceado);
-                                break;
+                for (int p = 0; p < percursos.length; p++) {
+                    for (int f = 0; f < formas.length; f++) {
+                        ArvoreBinaria arv = new ArvoreBinaria();
+                        for (int v : valores) {
+                            switch (p) {
+                                case 0:
+                                    arv.inserirPreOrder(v, f == 0);
+                                    break;
+                                case 1:
+                                    arv.inserirInOrder(v, f == 0);
+                                    break;
+                                case 2:
+                                    arv.inserirPostOrder(v, f == 0);
+                                    break;
+                                case 3:
+                                    arv.inserirEmNivel(v, f == 0);
+                                    break;
+                            }
                         }
+                        arvores[idx++] = arv;
                     }
+                }
 
-                    // Obtém vetor do percurso
-                    int[] vetorPercorrido;
-                    switch (percurso) {
-                        case "Pré-ordem":
-                            vetorPercorrido = arvore.preOrdem();
-                            break;
-                        case "Pós-ordem":
-                            vetorPercorrido = arvore.posOrdem();
-                            break;
-                        case "Em ordem":
-                            vetorPercorrido = arvore.inOrdem();
-                            break;
-                        default:
-                            vetorPercorrido = arvore.emNivel();
-                            break;
+                // exibir vetor ordenado apenas uma vez (usando InsertionSort, por exemplo)
+                int[] copia = valores.clone();
+                long t0 = System.nanoTime();
+                Ordenacao.insertionSort(copia);
+                long t1 = System.nanoTime();
+                System.out.println("Vetor ordenado (InsertionSort): " + ArvoreBinaria.arrToStr(copia));
+                System.out.println("Tempo (InsertionSort, referência): " + (t1 - t0) + " ns");
+
+                // exibir tabela comparativa
+                System.out.println("\n===== Tabela Comparativa =====\n");
+                System.out.printf("%-15s %-15s %-15s %-15s %-15s %-20s%n",
+                        "Percurso", "Forma", "Algoritmo", "Melhor caso", "Pior caso", "Tempo real (ns)\n");
+
+                idx = 0;
+                for (int p = 0; p < percursos.length; p++) {
+                    for (int f = 0; f < formas.length; f++) {
+                        ArvoreBinaria arv = arvores[idx++];
+                        int[] vetorPercorrido;
+                        switch (p) {
+                            case 0:
+                                vetorPercorrido = arv.preOrdem();
+                                break;
+                            case 1:
+                                vetorPercorrido = arv.inOrdem();
+                                break;
+                            case 2:
+                                vetorPercorrido = arv.posOrdem();
+                                break;
+                            default:
+                                vetorPercorrido = arv.emNivel();
+                                break;
+                        }
+
+                        executarOrdenacao("InsertionSort", percursos[p], formas[f],
+                                vetorPercorrido, "O(n)", "O(n²)");
+                        executarOrdenacao("SelectionSort", percursos[p], formas[f],
+                                vetorPercorrido, "O(n²)", "O(n²)");
+                        executarOrdenacao("BubbleSort", percursos[p], formas[f],
+                                vetorPercorrido, "O(n)", "O(n²)");
                     }
+                }
 
-                    // Aplica cada algoritmo de ordenação
-                    for (int a = 0; a < algoritmos.length; a++) {
-                        String algoritmo = algoritmos[a];
+                // menu interativo para explorar
+                while (true) {
+                    System.out.println("\n===== Menu de Visualização =====");
+                    System.out.println("1 - Visualizar estrutura de árvore");
+                    System.out.println("2 - Visualizar vetor de travessia");
+                    System.out.println("0 - Encerrar programa");
+                    System.out.print("Escolha: ");
+                    int op = sc.nextInt();
+                    if (op == 0)
+                        return;
 
-                        // Copia vetor manualmente
-                        int[] vetorOrdenado = new int[vetorPercorrido.length];
-                        for (int i = 0; i < vetorPercorrido.length; i++) {
-                            vetorOrdenado[i] = vetorPercorrido[i];
+                    if (op == 1 || op == 2) {
+                        System.out.println("\nEscolha o percurso:");
+                        for (int p = 0; p < percursos.length; p++) {
+                            System.out.println((p + 1) + " - " + percursos[p]);
                         }
+                        int p = sc.nextInt() - 1;
 
-                        // Mede tempo de execução
-                        long inicio = System.nanoTime();
-                        if (algoritmo.equals("InsertionSort")) {
-                            Ordenacao.insertionSort(vetorOrdenado);
-                        } else if (algoritmo.equals("SelectionSort")) {
-                            Ordenacao.selectionSort(vetorOrdenado);
-                        } else if (algoritmo.equals("BubbleSort")) {
-                            Ordenacao.bubbleSort(vetorOrdenado);
+                        System.out.println("\nEscolha a forma da árvore:");
+                        for (int f = 0; f < formas.length; f++) {
+                            System.out.println((f + 1) + " - " + formas[f]);
                         }
-                        long tempo = System.nanoTime() - inicio;
+                        int f = sc.nextInt() - 1;
 
-                        // Exibe vetores antes e depois da ordenação
-                        System.out.println("\n--- " + percurso + " | " + forma + " | " + algoritmo + " ---");
-                        System.out.print("Antes: [");
-                        for (int i = 0; i < vetorPercorrido.length; i++) {
-                            System.out.print(vetorPercorrido[i]);
-                            if (i < vetorPercorrido.length - 1)
-                                System.out.print(", ");
+                        int pos = p * 2 + f;
+                        ArvoreBinaria arv = arvores[pos];
+
+                        if (op == 1) {
+                            System.out.println("\nEstrutura da árvore:");
+                            arv.imprimirEstrutura();
+                        } else {
+                            int[] vetorPercorrido;
+                            switch (p) {
+                                case 0:
+                                    vetorPercorrido = arv.preOrdem();
+                                    break;
+                                case 1:
+                                    vetorPercorrido = arv.inOrdem();
+                                    break;
+                                case 2:
+                                    vetorPercorrido = arv.posOrdem();
+                                    break;
+                                default:
+                                    vetorPercorrido = arv.emNivel();
+                                    break;
+                            }
+                            System.out.println("\nVetor de travessia: " + ArvoreBinaria.arrToStr(vetorPercorrido));
                         }
-                        System.out.println("]");
-                        System.out.print("Depois: [");
-                        for (int i = 0; i < vetorOrdenado.length; i++) {
-                            System.out.print(vetorOrdenado[i]);
-                            if (i < vetorOrdenado.length - 1)
-                                System.out.print(", ");
-                        }
-                        System.out.println("]");
-                        System.out.println("Tempo: " + tempo + " ns");
-
-                        // Preenche tabela
-                        String melhorCaso = (algoritmo.equals("InsertionSort") || algoritmo.equals("BubbleSort"))
-                                ? "O(n)"
-                                : "O(n²)";
-                        String piorCaso = "O(n²)";
-
-                        tabelaResultados[linhaTabela][0] = percurso;
-                        tabelaResultados[linhaTabela][1] = forma;
-                        tabelaResultados[linhaTabela][2] = algoritmo;
-                        tabelaResultados[linhaTabela][3] = melhorCaso;
-                        tabelaResultados[linhaTabela][4] = piorCaso;
-                        tabelaResultados[linhaTabela][5] = String.valueOf(tempo);
-                        linhaTabela++;
                     }
                 }
             }
-
-            // Exibe tabela final
-            System.out.println("\n=== TABELA COMPARATIVA FINAL ===");
-            System.out.printf("%-12s %-14s %-15s %-12s %-12s %-15s%n",
-                    "Percurso", "Forma", "Algoritmo", "Melhor Caso", "Pior Caso", "Tempo Real (ns)");
-            for (int i = 0; i < linhaTabela; i++) {
-                System.out.printf("%-12s %-14s %-15s %-12s %-12s %-15s%n",
-                        tabelaResultados[i][0],
-                        tabelaResultados[i][1],
-                        tabelaResultados[i][2],
-                        tabelaResultados[i][3],
-                        tabelaResultados[i][4],
-                        tabelaResultados[i][5]);
-            }
-
-            System.out.print("\nDeseja repetir o processo? (s/n): ");
-            repetir = sc.next().equalsIgnoreCase("s");
         }
+    }
 
-        sc.close();
+    private static void executarOrdenacao(String algoritmo, String percurso, String forma,
+            int[] vetor, String melhorCaso, String piorCaso) {
+        int[] copia = vetor.clone();
+        long inicio = System.nanoTime();
+        if (algoritmo.equals("InsertionSort"))
+            Ordenacao.insertionSort(copia);
+        else if (algoritmo.equals("SelectionSort"))
+            Ordenacao.selectionSort(copia);
+        else
+            Ordenacao.bubbleSort(copia);
+        long fim = System.nanoTime();
+        long tempo = fim - inicio;
+
+        System.out.printf("%-15s %-15s %-15s %-15s %-15s %-20d%n",
+                percurso, forma, algoritmo, melhorCaso, piorCaso, tempo);
     }
 }
