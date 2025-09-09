@@ -5,6 +5,7 @@ public class ArvoreBinaria {
         this.raiz = null;
     }
 
+    // ----- INSERÇÃO PRE-ORDEM -----
     public void inserirPreOrder(int valor, boolean balanceado) {
         if (raiz == null) {
             raiz = new No(valor);
@@ -13,55 +14,67 @@ public class ArvoreBinaria {
         No[] pilha = new No[1024 * 16];
         int topo = 0;
         pilha[topo++] = raiz;
+
         while (topo > 0) {
             No atual = pilha[--topo];
-            if (atual.esq == null) {
+            if (atual.esq == null && balanceado) {
                 atual.esq = new No(valor);
                 return;
-            } else if (atual.dir == null) {
+            } else if (atual.dir == null && balanceado) {
                 atual.dir = new No(valor);
                 return;
-            } else {
-                if (balanceado) {
-                    pilha[topo++] = atual.dir;
-                    pilha[topo++] = atual.esq;
-                } else {
-                    pilha[topo++] = atual.dir;
-                    pilha[topo++] = atual.esq;
+            } else if (!balanceado) {
+                // desbalanceada: tenta sempre à direita primeiro
+                if (atual.dir == null) {
+                    atual.dir = new No(valor);
+                    return;
+                } else if (atual.esq == null) {
+                    atual.esq = new No(valor);
+                    return;
                 }
+            }
+            if (balanceado) {
+                pilha[topo++] = atual.dir;
+                pilha[topo++] = atual.esq;
+            } else {
+                pilha[topo++] = atual.dir;
+                pilha[topo++] = atual.esq;
             }
         }
     }
 
+    // ----- INSERÇÃO IN-ORDEM -----
     public void inserirInOrder(int valor, boolean balanceado) {
         if (raiz == null) {
             raiz = new No(valor);
             return;
         }
-        No[] pilha = new No[1024 * 16];
         No atual = raiz;
-        int topo = 0;
-        while (atual != null || topo > 0) {
-            while (atual != null) {
-                pilha[topo++] = atual;
-                atual = atual.esq;
+        No pai = null;
+        while (atual != null) {
+            pai = atual;
+            if (balanceado) {
+                if (contarNos(atual.esq) <= contarNos(atual.dir))
+                    atual = atual.esq;
+                else
+                    atual = atual.dir;
+            } else {
+                atual = atual.dir; // cresce sempre para a direita
             }
-            atual = pilha[--topo];
-            if (atual.esq == null) {
-                atual.esq = new No(valor);
-                return;
-            } else if (atual.dir == null) {
-                atual.dir = new No(valor);
-                return;
-            }
-            atual = atual.dir;
         }
-        No node = raiz;
-        while (node.dir != null)
-            node = node.dir;
-        node.dir = new No(valor);
+        if (pai == null)
+            raiz = new No(valor);
+        else if (balanceado) {
+            if (pai.esq == null)
+                pai.esq = new No(valor);
+            else
+                pai.dir = new No(valor);
+        } else {
+            pai.dir = new No(valor);
+        }
     }
 
+    // ----- INSERÇÃO PÓS-ORDEM -----
     public void inserirPostOrder(int valor, boolean balanceado) {
         if (raiz == null) {
             raiz = new No(valor);
@@ -70,26 +83,36 @@ public class ArvoreBinaria {
         No[] pilha = new No[1024 * 16];
         int topo = 0;
         pilha[topo++] = raiz;
+
         while (topo > 0) {
             No atual = pilha[--topo];
-            if (atual.esq == null) {
+            if (atual.esq == null && balanceado) {
                 atual.esq = new No(valor);
                 return;
-            } else if (atual.dir == null) {
+            } else if (atual.dir == null && balanceado) {
                 atual.dir = new No(valor);
                 return;
-            } else {
-                if (balanceado) {
-                    pilha[topo++] = atual.esq;
-                    pilha[topo++] = atual.dir;
-                } else {
-                    pilha[topo++] = atual.esq;
-                    pilha[topo++] = atual.dir;
+            } else if (!balanceado) {
+                if (atual.dir == null) {
+                    atual.dir = new No(valor);
+                    return;
+                } else if (atual.esq == null) {
+                    atual.esq = new No(valor);
+                    return;
                 }
+            }
+
+            if (balanceado) {
+                pilha[topo++] = atual.esq;
+                pilha[topo++] = atual.dir;
+            } else {
+                pilha[topo++] = atual.dir;
+                pilha[topo++] = atual.esq;
             }
         }
     }
 
+    // ----- INSERÇÃO EM NÍVEL -----
     public void inserirEmNivel(int valor, boolean balanceado) {
         if (raiz == null) {
             raiz = new No(valor);
@@ -98,24 +121,36 @@ public class ArvoreBinaria {
         No[] fila = new No[1024 * 16];
         int inicio = 0, fim = 0;
         fila[fim++] = raiz;
+
         while (inicio < fim) {
             No atual = fila[inicio++];
-            if (atual.esq == null) {
-                atual.esq = new No(valor);
-                return;
-            } else if (atual.dir == null) {
-                atual.dir = new No(valor);
-                return;
-            } else {
+            if (balanceado) {
+                if (atual.esq == null) {
+                    atual.esq = new No(valor);
+                    return;
+                } else if (atual.dir == null) {
+                    atual.dir = new No(valor);
+                    return;
+                }
                 fila[fim++] = atual.esq;
                 fila[fim++] = atual.dir;
+            } else {
+                if (atual.dir == null) {
+                    atual.dir = new No(valor);
+                    return;
+                } else if (atual.esq == null) {
+                    atual.esq = new No(valor);
+                    return;
+                }
+                fila[fim++] = atual.dir;
+                fila[fim++] = atual.esq;
             }
         }
     }
 
+    // ----- TRAVESSIAS (pre, in, pos, nivel) -----
     public int[] preOrdem() {
-        int tamanho = contarNos(raiz);
-        int[] out = new int[tamanho];
+        int[] out = new int[contarNos(raiz)];
         preOrdemRec(raiz, out, 0);
         return out;
     }
@@ -130,8 +165,7 @@ public class ArvoreBinaria {
     }
 
     public int[] inOrdem() {
-        int tamanho = contarNos(raiz);
-        int[] out = new int[tamanho];
+        int[] out = new int[contarNos(raiz)];
         inOrdemRec(raiz, out, 0);
         return out;
     }
@@ -146,8 +180,7 @@ public class ArvoreBinaria {
     }
 
     public int[] posOrdem() {
-        int tamanho = contarNos(raiz);
-        int[] out = new int[tamanho];
+        int[] out = new int[contarNos(raiz)];
         posOrdemRec(raiz, out, 0);
         return out;
     }
@@ -180,12 +213,14 @@ public class ArvoreBinaria {
         return out;
     }
 
+    // ----- CONTAGEM DE NÓS -----
     public int contarNos(No node) {
         if (node == null)
             return 0;
         return 1 + contarNos(node.esq) + contarNos(node.dir);
     }
 
+    // ----- IMPRESSÃO DE ARRAYS -----
     public static String arrToStr(int[] a) {
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < a.length; i++) {
@@ -195,5 +230,26 @@ public class ArvoreBinaria {
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    // ----- IMPRESSÃO DA ESTRUTURA DA ÁRVORE -----
+    public void imprimirEstrutura() {
+        imprimirRec(raiz, "", true);
+    }
+
+    private void imprimirRec(No node, String prefixo, boolean isTail) {
+        if (node == null)
+            return;
+        System.out.println(prefixo + (isTail ? "└── " : "├── ") + node.valor);
+        if (node.esq != null || node.dir != null) {
+            if (node.esq != null && node.dir != null) {
+                imprimirRec(node.esq, prefixo + (isTail ? "    " : "│   "), false);
+                imprimirRec(node.dir, prefixo + (isTail ? "    " : "│   "), true);
+            } else if (node.esq != null) {
+                imprimirRec(node.esq, prefixo + (isTail ? "    " : "│   "), true);
+            } else {
+                imprimirRec(node.dir, prefixo + (isTail ? "    " : "│   "), true);
+            }
+        }
     }
 }
