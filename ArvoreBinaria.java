@@ -1,228 +1,158 @@
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class ArvoreBinaria {
-    No raiz;
+    public No raiz;
 
     public ArvoreBinaria() {
         this.raiz = null;
     }
 
-    // ----- INSERÇÃO PRE-ORDEM -----
-    public void inserirPreOrder(int valor, boolean balanceado) {
+    // ---------- MÉTODOS DE INSERÇÃO ----------
+    // Insere um único valor na árvore no modo 'completa' (preenche por níveis,
+    // esquerda antes da direita)
+    public void inserirCompleta(int valor) {
+        No novo = new No(valor);
         if (raiz == null) {
-            raiz = new No(valor);
+            raiz = novo;
             return;
         }
-        No[] pilha = new No[1024 * 16];
-        int topo = 0;
-        pilha[topo++] = raiz;
-
-        while (topo > 0) {
-            No atual = pilha[--topo];
-            if (atual.esq == null && balanceado) {
-                atual.esq = new No(valor);
+        Queue<No> fila = new LinkedList<>();
+        fila.add(raiz);
+        while (!fila.isEmpty()) {
+            No atual = fila.poll();
+            if (atual.esq == null) {
+                atual.esq = novo;
                 return;
-            } else if (atual.dir == null && balanceado) {
-                atual.dir = new No(valor);
+            }
+            if (atual.dir == null) {
+                atual.dir = novo;
                 return;
-            } else if (!balanceado) {
-                // desbalanceada: tenta sempre à direita primeiro
-                if (atual.dir == null) {
-                    atual.dir = new No(valor);
-                    return;
-                } else if (atual.esq == null) {
-                    atual.esq = new No(valor);
-                    return;
-                }
             }
-            if (balanceado) {
-                pilha[topo++] = atual.dir;
-                pilha[topo++] = atual.esq;
-            } else {
-                pilha[topo++] = atual.dir;
-                pilha[topo++] = atual.esq;
-            }
+            fila.add(atual.esq);
+            fila.add(atual.dir);
         }
     }
 
-    // ----- INSERÇÃO IN-ORDEM -----
-    public void inserirInOrder(int valor, boolean balanceado) {
+    // Insere um único valor no modo 'desbalanceada' (força o desbalanceamento para
+    // a ESQUERDA)
+    // Implementação: segue a cadeia da esquerda até achar uma posição nula e insere
+    // lá (lista à esquerda).
+    public void inserirDesbalanceada(int valor) {
+        No novo = new No(valor);
         if (raiz == null) {
-            raiz = new No(valor);
+            raiz = novo;
             return;
         }
         No atual = raiz;
-        No pai = null;
-        while (atual != null) {
-            pai = atual;
-            if (balanceado) {
-                if (contarNos(atual.esq) <= contarNos(atual.dir))
-                    atual = atual.esq;
-                else
-                    atual = atual.dir;
-            } else {
-                atual = atual.dir; // cresce sempre para a direita
-            }
+        while (atual.esq != null) {
+            atual = atual.esq;
         }
-        if (pai == null)
-            raiz = new No(valor);
-        else if (balanceado) {
-            if (pai.esq == null)
-                pai.esq = new No(valor);
-            else
-                pai.dir = new No(valor);
-        } else {
-            pai.dir = new No(valor);
-        }
+        atual.esq = novo;
     }
 
-    // ----- INSERÇÃO PÓS-ORDEM -----
-    public void inserirPostOrder(int valor, boolean balanceado) {
-        if (raiz == null) {
-            raiz = new No(valor);
+    // ---------- TRAVESSIAS (RETORNAM VETORES) ----------
+    // pre-ordem: raiz, esq, dir
+    public int[] preOrdem(int totalNos) {
+        int[] out = new int[totalNos];
+        preOrdemRec(raiz, out, new int[] { 0 });
+        return out;
+    }
+
+    private void preOrdemRec(No node, int[] out, int[] idx) {
+        if (node == null)
             return;
-        }
-        No[] pilha = new No[1024 * 16];
-        int topo = 0;
-        pilha[topo++] = raiz;
-
-        while (topo > 0) {
-            No atual = pilha[--topo];
-            if (atual.esq == null && balanceado) {
-                atual.esq = new No(valor);
-                return;
-            } else if (atual.dir == null && balanceado) {
-                atual.dir = new No(valor);
-                return;
-            } else if (!balanceado) {
-                if (atual.dir == null) {
-                    atual.dir = new No(valor);
-                    return;
-                } else if (atual.esq == null) {
-                    atual.esq = new No(valor);
-                    return;
-                }
-            }
-
-            if (balanceado) {
-                pilha[topo++] = atual.esq;
-                pilha[topo++] = atual.dir;
-            } else {
-                pilha[topo++] = atual.dir;
-                pilha[topo++] = atual.esq;
-            }
-        }
+        out[idx[0]++] = node.valor;
+        preOrdemRec(node.esq, out, idx);
+        preOrdemRec(node.dir, out, idx);
     }
 
-    // ----- INSERÇÃO EM NÍVEL -----
-    public void inserirEmNivel(int valor, boolean balanceado) {
-        if (raiz == null) {
-            raiz = new No(valor);
+    // in-ordem: esq, raiz, dir
+    public int[] inOrdem(int totalNos) {
+        int[] out = new int[totalNos];
+        inOrdemRec(raiz, out, new int[] { 0 });
+        return out;
+    }
+
+    private void inOrdemRec(No node, int[] out, int[] idx) {
+        if (node == null)
             return;
-        }
-        No[] fila = new No[1024 * 16];
-        int inicio = 0, fim = 0;
-        fila[fim++] = raiz;
-
-        while (inicio < fim) {
-            No atual = fila[inicio++];
-            if (balanceado) {
-                if (atual.esq == null) {
-                    atual.esq = new No(valor);
-                    return;
-                } else if (atual.dir == null) {
-                    atual.dir = new No(valor);
-                    return;
-                }
-                fila[fim++] = atual.esq;
-                fila[fim++] = atual.dir;
-            } else {
-                if (atual.dir == null) {
-                    atual.dir = new No(valor);
-                    return;
-                } else if (atual.esq == null) {
-                    atual.esq = new No(valor);
-                    return;
-                }
-                fila[fim++] = atual.dir;
-                fila[fim++] = atual.esq;
-            }
-        }
+        inOrdemRec(node.esq, out, idx);
+        out[idx[0]++] = node.valor;
+        inOrdemRec(node.dir, out, idx);
     }
 
-    // ----- TRAVESSIAS (pre, in, pos, nivel) -----
-    public int[] preOrdem() {
-        int[] out = new int[contarNos(raiz)];
-        preOrdemRec(raiz, out, 0);
+    // pos-ordem: esq, dir, raiz
+    public int[] posOrdem(int totalNos) {
+        int[] out = new int[totalNos];
+        posOrdemRec(raiz, out, new int[] { 0 });
         return out;
     }
 
-    private int preOrdemRec(No node, int[] out, int idx) {
+    private void posOrdemRec(No node, int[] out, int[] idx) {
         if (node == null)
-            return idx;
-        out[idx++] = node.valor;
-        idx = preOrdemRec(node.esq, out, idx);
-        idx = preOrdemRec(node.dir, out, idx);
-        return idx;
+            return;
+        posOrdemRec(node.esq, out, idx);
+        posOrdemRec(node.dir, out, idx);
+        out[idx[0]++] = node.valor;
     }
 
-    public int[] inOrdem() {
-        int[] out = new int[contarNos(raiz)];
-        inOrdemRec(raiz, out, 0);
-        return out;
-    }
-
-    private int inOrdemRec(No node, int[] out, int idx) {
-        if (node == null)
-            return idx;
-        idx = inOrdemRec(node.esq, out, idx);
-        out[idx++] = node.valor;
-        idx = inOrdemRec(node.dir, out, idx);
-        return idx;
-    }
-
-    public int[] posOrdem() {
-        int[] out = new int[contarNos(raiz)];
-        posOrdemRec(raiz, out, 0);
-        return out;
-    }
-
-    private int posOrdemRec(No node, int[] out, int idx) {
-        if (node == null)
-            return idx;
-        idx = posOrdemRec(node.esq, out, idx);
-        idx = posOrdemRec(node.dir, out, idx);
-        out[idx++] = node.valor;
-        return idx;
-    }
-
-    public int[] emNivel() {
-        int tamanho = contarNos(raiz);
-        int[] out = new int[tamanho];
+    // por nível (BFS)
+    public int[] porNivel(int totalNos) {
+        int[] out = new int[totalNos];
         if (raiz == null)
             return out;
-        No[] fila = new No[tamanho + 5];
-        int inicio = 0, fim = 0, idx = 0;
-        fila[fim++] = raiz;
-        while (inicio < fim) {
-            No atual = fila[inicio++];
-            out[idx++] = atual.valor;
+        Queue<No> fila = new LinkedList<>();
+        fila.add(raiz);
+        int i = 0;
+        while (!fila.isEmpty() && i < totalNos) {
+            No atual = fila.poll();
+            out[i++] = atual.valor;
             if (atual.esq != null)
-                fila[fim++] = atual.esq;
+                fila.add(atual.esq);
             if (atual.dir != null)
-                fila[fim++] = atual.dir;
+                fila.add(atual.dir);
         }
         return out;
     }
 
-    // ----- CONTAGEM DE NÓS -----
-    public int contarNos(No node) {
-        if (node == null)
-            return 0;
-        return 1 + contarNos(node.esq) + contarNos(node.dir);
+    // ---------- IMPRESSÃO DA ESTRUTURA (DIAGRAMA) ----------
+    public void imprimirEstrutura() {
+        if (raiz == null) {
+            System.out.println("(árvore vazia)");
+            return;
+        }
+        imprimirRec(raiz, "", true);
     }
 
-    // ----- IMPRESSÃO DE ARRAYS -----
+    // prefixo para desenho; 'ultimo' indica se o nó é o último filho no nível para
+    // desenhar └── ou ├──
+    private void imprimirRec(No node, String prefixo, boolean ultimo) {
+        if (node == null)
+            return;
+        System.out.println(prefixo + (ultimo ? "└── " : "├── ") + node.valor);
+        // Se existirem filhos, desenhar: primeiro esquerdo (não-último), depois direito
+        // (último)
+        if (node.esq != null || node.dir != null) {
+            // ajustar prefixo para filhos
+            String novoPrefixo = prefixo + (ultimo ? "    " : "│   ");
+            if (node.esq != null && node.dir != null) {
+                imprimirRec(node.esq, novoPrefixo, false);
+                imprimirRec(node.dir, novoPrefixo, true);
+            } else if (node.esq != null) {
+                imprimirRec(node.esq, novoPrefixo, true);
+            } else {
+                imprimirRec(node.dir, novoPrefixo, true);
+            }
+        }
+    }
+
+    // ---------- UTILITÁRIO ----------
     public static String arrToStr(int[] a) {
-        StringBuilder sb = new StringBuilder("[");
+        if (a == null)
+            return "[]";
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
         for (int i = 0; i < a.length; i++) {
             sb.append(a[i]);
             if (i < a.length - 1)
@@ -230,26 +160,5 @@ public class ArvoreBinaria {
         }
         sb.append("]");
         return sb.toString();
-    }
-
-    // ----- IMPRESSÃO DA ESTRUTURA DA ÁRVORE -----
-    public void imprimirEstrutura() {
-        imprimirRec(raiz, "", true);
-    }
-
-    private void imprimirRec(No node, String prefixo, boolean isTail) {
-        if (node == null)
-            return;
-        System.out.println(prefixo + (isTail ? "└── " : "├── ") + node.valor);
-        if (node.esq != null || node.dir != null) {
-            if (node.esq != null && node.dir != null) {
-                imprimirRec(node.esq, prefixo + (isTail ? "    " : "│   "), false);
-                imprimirRec(node.dir, prefixo + (isTail ? "    " : "│   "), true);
-            } else if (node.esq != null) {
-                imprimirRec(node.esq, prefixo + (isTail ? "    " : "│   "), true);
-            } else {
-                imprimirRec(node.dir, prefixo + (isTail ? "    " : "│   "), true);
-            }
-        }
     }
 }
