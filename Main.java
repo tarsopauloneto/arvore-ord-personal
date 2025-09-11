@@ -4,7 +4,6 @@ public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        // labels usados por toda a Main
         String[] percursos = { "Pré-ordem", "In-ordem", "Pós-ordem", "Em nível" };
         String[] formas = { "Completa", "Desbalanceada" };
 
@@ -17,22 +16,20 @@ public class Main {
             int totalNos = (int) Math.pow(2, altura) - 1;
             System.out.println("Número de nós criados: " + totalNos);
 
-            // gerar vetor de valores aleatórios
             int[] valores = new int[totalNos];
             for (int i = 0; i < totalNos; i++)
                 valores[i] = (int) (Math.random() * 100);
             System.out.println("Vetor original: " + ArvoreBinaria.arrToStr(valores));
 
-            // Construir árvores: 2 (formas) x 4 (percursos) = 8 árvores
+            // Construir árvores
             ArvoreBinaria[][] arvores = new ArvoreBinaria[2][4];
-            for (int f = 0; f < 2; f++) { // 0 = completa, 1 = desbalanceada
+            for (int f = 0; f < 2; f++) {
                 for (int p = 0; p < 4; p++) {
                     ArvoreBinaria arv = new ArvoreBinaria();
-                    // inserir valores usando os dois métodos separados
-                    if (f == 0) { // completa
+                    if (f == 0) {
                         for (int v : valores)
                             arv.inserirCompleta(v);
-                    } else { // desbalanceada (força à esquerda)
+                    } else {
                         for (int v : valores)
                             arv.inserirDesbalanceada(v);
                     }
@@ -40,18 +37,22 @@ public class Main {
                 }
             }
 
-            // exibir vetor ordenado apenas uma vez (InsertionSort)
+            // exibir vetor ordenado como referência
             int[] vetorOrdenado = valores.clone();
             long t0 = System.nanoTime();
-            Ordenacao.insertionSort(vetorOrdenado);
+            Sorts.insertionSort(vetorOrdenado);
             long t1 = System.nanoTime();
             System.out.println("Vetor ordenado (InsertionSort): " + ArvoreBinaria.arrToStr(vetorOrdenado));
             System.out.println("Tempo (InsertionSort, referência): " + (t1 - t0) + " ns");
 
             // tabela comparativa
             System.out.println("\n===== Tabela Comparativa =====\n");
-            System.out.printf("%-12s %-14s %-15s %-12s %-12s %-15s%n",
-                    "Percurso", "Forma", "Algoritmo", "Melhor caso", "Pior caso", "Tempo real (ns)");
+
+            // cabeçalho centralizado
+            System.out.printf("| %-15s | %-15s | %-15s | %-15s | %-15s | %-15s | %-15s |\n",
+                    "Percurso", "Forma", "Algoritmo", "Melhor caso", "Pior caso", "Caso atual", "Tempo(ns)");
+            System.out.println(
+                    "|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|");
 
             for (int f = 0; f < 2; f++) {
                 for (int p = 0; p < 4; p++) {
@@ -65,14 +66,13 @@ public class Main {
                 }
             }
 
-            // menu interativo: visualizar estrutura (escolha apenas forma) ou vetores
-            // (escolha percurso + forma)
+            // menu de visualização
             boolean volta = false;
             while (!volta) {
                 System.out.println("\n===== Menu de Visualização =====");
-                System.out.println("1 - Visualizar estrutura de árvore (escolha: Completa/Desbalanceada)");
-                System.out.println("2 - Visualizar vetor de travessia (escolha percurso e forma)");
-                System.out.println("0 - Voltar (nova execução / alterar altura)");
+                System.out.println("1 - Visualizar estrutura da árvore");
+                System.out.println("2 - Visualizar vetor por travessia");
+                System.out.println("0 - Voltar (nova execução)");
                 System.out.print("Escolha: ");
                 int op = sc.nextInt();
                 if (op == 0)
@@ -84,11 +84,8 @@ public class Main {
                     System.out.println("2 - Desbalanceada");
                     int escolha = sc.nextInt();
                     int fidx = (escolha == 1) ? 0 : 1;
-                    // qualquer percurso serve para mostrar a estrutura da forma (todas iguais por
-                    // forma)
                     System.out.println("\nEstrutura (" + formas[fidx] + "):");
-                    arvores[fidx][0].imprimirEstrutura(); // mostramos a árvore do índice de percurso 0 (Pré-ordem) —
-                                                          // equivalente para a forma
+                    arvores[fidx][0].imprimirEstrutura();
                 } else if (op == 2) {
                     System.out.println("\nEscolha o percurso:");
                     for (int i = 0; i < percursos.length; i++) {
@@ -107,14 +104,12 @@ public class Main {
                     System.out.println("Opção inválida. Tente novamente.");
                 }
             }
-            // volta para solicitar nova altura
         }
 
         sc.close();
         System.out.println("Programa encerrado.");
     }
 
-    // p: 0=pre,1=in,2=pos,3=porNivel
     private static int[] obterVetorPorPercurso(ArvoreBinaria arv, int p, int totalNos) {
         switch (p) {
             case 0:
@@ -130,18 +125,17 @@ public class Main {
 
     private static void executarOrdenacao(String algoritmo, String percurso, String forma,
             int[] vetor, String melhorCaso, String piorCaso) {
-        int[] copia = vetor.clone();
-        long inicio = System.nanoTime();
-        if ("InsertionSort".equals(algoritmo))
-            Ordenacao.insertionSort(copia);
-        else if ("SelectionSort".equals(algoritmo))
-            Ordenacao.selectionSort(copia);
-        else
-            Ordenacao.bubbleSort(copia);
-        long fim = System.nanoTime();
-        long tempo = fim - inicio;
 
-        System.out.printf("%-12s %-14s %-15s %-12s %-12s %-15d%n",
-                percurso, forma, algoritmo, melhorCaso, piorCaso, tempo);
+        ResultadoOrdenacao resultado;
+        if ("InsertionSort".equals(algoritmo))
+            resultado = Sorts.insertionSort(vetor);
+        else if ("SelectionSort".equals(algoritmo))
+            resultado = Sorts.selectionSort(vetor);
+        else
+            resultado = Sorts.bubbleSort(vetor);
+
+        System.out.printf("| %-15s | %-15s | %-15s | %-15s | %-15s | %-15s | %-15d |\n",
+                percurso, forma, algoritmo, melhorCaso, piorCaso,
+                resultado.getCasoAtual(), resultado.getTempoExecucao());
     }
 }
