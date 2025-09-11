@@ -9,7 +9,7 @@ public class ArvoreBinaria {
     }
 
     // ---------- MÉTODOS DE INSERÇÃO ----------
-    // Insere um único valor na árvore no modo 'completa' (preenche por níveis,
+    // Insere um único valor na árvore na forma 'completa' (preenche por níveis,
     // esquerda antes da direita)
     public void inserirCompleta(int valor) {
         No novo = new No(valor);
@@ -34,7 +34,7 @@ public class ArvoreBinaria {
         }
     }
 
-    // Insere um único valor no modo 'desbalanceada' (força o desbalanceamento para
+    // Insere um único valor na forma 'desbalanceada' (força o desbalanceamento para
     // a ESQUERDA)
     // Implementação: segue a cadeia da esquerda até achar uma posição nula e insere
     // lá (lista à esquerda).
@@ -54,66 +54,66 @@ public class ArvoreBinaria {
     // ---------- TRAVESSIAS (RETORNAM VETORES) ----------
     // pre-ordem: raiz, esq, dir
     public int[] preOrdem(int totalNos) {
-        int[] out = new int[totalNos];
-        preOrdemRec(raiz, out, new int[] { 0 });
-        return out;
+        int[] percorrido = new int[totalNos];
+        preOrdemRec(raiz, percorrido, new int[] { 0 });
+        return percorrido;
     }
 
-    private void preOrdemRec(No node, int[] out, int[] idx) {
+    private void preOrdemRec(No node, int[] percorrido, int[] idx) {
         if (node == null)
             return;
-        out[idx[0]++] = node.valor;
-        preOrdemRec(node.esq, out, idx);
-        preOrdemRec(node.dir, out, idx);
+        percorrido[idx[0]++] = node.valor;
+        preOrdemRec(node.esq, percorrido, idx);
+        preOrdemRec(node.dir, percorrido, idx);
     }
 
     // in-ordem: esq, raiz, dir
     public int[] inOrdem(int totalNos) {
-        int[] out = new int[totalNos];
-        inOrdemRec(raiz, out, new int[] { 0 });
-        return out;
+        int[] percorrido = new int[totalNos];
+        inOrdemRec(raiz, percorrido, new int[] { 0 });
+        return percorrido;
     }
 
-    private void inOrdemRec(No node, int[] out, int[] idx) {
+    private void inOrdemRec(No node, int[] percorrido, int[] idx) {
         if (node == null)
             return;
-        inOrdemRec(node.esq, out, idx);
-        out[idx[0]++] = node.valor;
-        inOrdemRec(node.dir, out, idx);
+        inOrdemRec(node.esq, percorrido, idx);
+        percorrido[idx[0]++] = node.valor;
+        inOrdemRec(node.dir, percorrido, idx);
     }
 
     // pos-ordem: esq, dir, raiz
     public int[] posOrdem(int totalNos) {
-        int[] out = new int[totalNos];
-        posOrdemRec(raiz, out, new int[] { 0 });
-        return out;
+        int[] percorrido = new int[totalNos];
+        posOrdemRec(raiz, percorrido, new int[] { 0 });
+        return percorrido;
     }
 
-    private void posOrdemRec(No node, int[] out, int[] idx) {
+    private void posOrdemRec(No node, int[] percorrido, int[] idx) {
         if (node == null)
             return;
-        posOrdemRec(node.esq, out, idx);
-        posOrdemRec(node.dir, out, idx);
-        out[idx[0]++] = node.valor;
+        posOrdemRec(node.esq, percorrido, idx);
+        posOrdemRec(node.dir, percorrido, idx);
+        percorrido[idx[0]++] = node.valor;
     }
 
-    // por nível (BFS)
+    // por nível
     public int[] porNivel(int totalNos) {
-        int[] out = new int[totalNos];
+        int[] percorrido = new int[totalNos];
         if (raiz == null)
-            return out;
+            return percorrido;
         Queue<No> fila = new LinkedList<>();
         fila.add(raiz);
         int i = 0;
         while (!fila.isEmpty() && i < totalNos) {
             No atual = fila.poll();
-            out[i++] = atual.valor;
+            percorrido[i++] = atual.valor;
             if (atual.esq != null)
                 fila.add(atual.esq);
             if (atual.dir != null)
                 fila.add(atual.dir);
         }
-        return out;
+        return percorrido;
     }
 
     // ---------- IMPRESSÃO DA ESTRUTURA (DIAGRAMA) ----------
