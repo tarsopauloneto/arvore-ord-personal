@@ -26,10 +26,10 @@ public class Main {
             for (int f = 0; f < 2; f++) {
                 for (int p = 0; p < 4; p++) {
                     ArvoreBinaria arv = new ArvoreBinaria();
-                    if (f == 0) {
+                    if (f == 0) { // completa
                         for (int v : valores)
                             arv.inserirCompleta(v);
-                    } else {
+                    } else { // desbalanceada
                         for (int v : valores)
                             arv.inserirDesbalanceada(v);
                     }
@@ -39,16 +39,11 @@ public class Main {
 
             // exibir vetor ordenado como referência
             int[] vetorOrdenado = valores.clone();
-            long t0 = System.nanoTime();
             Sorts.insertionSort(vetorOrdenado);
-            long t1 = System.nanoTime();
             System.out.println("Vetor ordenado (InsertionSort): " + ArvoreBinaria.arrToStr(vetorOrdenado));
-            System.out.println("Tempo (InsertionSort, referência): " + (t1 - t0) + " ns");
 
             // tabela comparativa
             System.out.println("\n===== Tabela Comparativa =====\n");
-
-            // cabeçalho centralizado
             System.out.printf("| %-15s | %-15s | %-15s | %-15s | %-15s | %-15s | %-15s |\n",
                     "Percurso", "Forma", "Algoritmo", "Melhor caso", "Pior caso", "Caso atual", "Tempo(ns)");
             System.out.println(
@@ -127,12 +122,17 @@ public class Main {
             int[] vetor, String melhorCaso, String piorCaso) {
 
         ResultadoOrdenacao resultado;
-        if ("InsertionSort".equals(algoritmo))
-            resultado = Sorts.insertionSort(vetor);
-        else if ("SelectionSort".equals(algoritmo))
-            resultado = Sorts.selectionSort(vetor);
-        else
-            resultado = Sorts.bubbleSort(vetor);
+        switch (algoritmo) {
+            case "InsertionSort":
+                resultado = Sorts.getCasoAtualTempoInsertion(vetor);
+                break;
+            case "SelectionSort":
+                resultado = Sorts.getCasoAtualTempoSelection(vetor);
+                break;
+            default:
+                resultado = Sorts.getCasoAtualTempoBubble(vetor);
+                break;
+        }
 
         System.out.printf("| %-15s | %-15s | %-15s | %-15s | %-15s | %-15s | %-15d |\n",
                 percurso, forma, algoritmo, melhorCaso, piorCaso,

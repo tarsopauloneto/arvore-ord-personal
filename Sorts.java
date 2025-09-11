@@ -19,12 +19,9 @@ public class Sorts {
         return "Caso médio";
     }
 
-    // Bubble Sort
-    public static ResultadoOrdenacao bubbleSort(int[] vetorOriginal) {
-        int[] vetor = vetorOriginal.clone();
-        String casoAtual = classificaCasoAtual(vetor);
+    // ---------------- Ordenações ----------------
 
-        long inicio = System.nanoTime();
+    public static void bubbleSort(int[] vetor) {
         for (int i = 0; i < vetor.length - 1; i++) {
             for (int j = 0; j < vetor.length - i - 1; j++) {
                 if (vetor[j] > vetor[j + 1]) {
@@ -34,17 +31,9 @@ public class Sorts {
                 }
             }
         }
-        long fim = System.nanoTime();
-
-        return new ResultadoOrdenacao(casoAtual, fim - inicio);
     }
 
-    // Insertion Sort
-    public static ResultadoOrdenacao insertionSort(int[] vetorOriginal) {
-        int[] vetor = vetorOriginal.clone();
-        String casoAtual = classificaCasoAtual(vetor);
-
-        long inicio = System.nanoTime();
+    public static void insertionSort(int[] vetor) {
         for (int i = 1; i < vetor.length; i++) {
             int chave = vetor[i];
             int j = i - 1;
@@ -55,17 +44,9 @@ public class Sorts {
             }
             vetor[j + 1] = chave;
         }
-        long fim = System.nanoTime();
-
-        return new ResultadoOrdenacao(casoAtual, fim - inicio);
     }
 
-    // Selection Sort
-    public static ResultadoOrdenacao selectionSort(int[] vetorOriginal) {
-        int[] vetor = vetorOriginal.clone();
-        String casoAtual = classificaCasoAtual(vetor);
-
-        long inicio = System.nanoTime();
+    public static void selectionSort(int[] vetor) {
         for (int i = 0; i < vetor.length - 1; i++) {
             int minIndex = i;
             for (int j = i + 1; j < vetor.length; j++) {
@@ -77,6 +58,38 @@ public class Sorts {
             vetor[minIndex] = vetor[i];
             vetor[i] = temp;
         }
+    }
+
+    // ---------------- Métodos que retornam ResultadoOrdenacao ----------------
+
+    public static ResultadoOrdenacao getCasoAtualTempoBubble(int[] vetorOriginal) {
+        int[] vetor = vetorOriginal.clone();
+        String casoAtual = classificaCasoAtual(vetor);
+
+        long inicio = System.nanoTime();
+        bubbleSort(vetor);
+        long fim = System.nanoTime();
+
+        return new ResultadoOrdenacao(casoAtual, fim - inicio);
+    }
+
+    public static ResultadoOrdenacao getCasoAtualTempoInsertion(int[] vetorOriginal) {
+        int[] vetor = vetorOriginal.clone();
+        String casoAtual = classificaCasoAtual(vetor);
+
+        long inicio = System.nanoTime();
+        insertionSort(vetor);
+        long fim = System.nanoTime();
+
+        return new ResultadoOrdenacao(casoAtual, fim - inicio);
+    }
+
+    public static ResultadoOrdenacao getCasoAtualTempoSelection(int[] vetorOriginal) {
+        int[] vetor = vetorOriginal.clone();
+        String casoAtual = classificaCasoAtual(vetor);
+
+        long inicio = System.nanoTime();
+        selectionSort(vetor);
         long fim = System.nanoTime();
 
         return new ResultadoOrdenacao(casoAtual, fim - inicio);
